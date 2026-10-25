@@ -267,28 +267,28 @@ matterfast, moneymanager и aiddiction.
 
 ## 6. Состояние
 
-Шаги 1 и 3 сделаны (крейт, Android-библиотека, стек «назад» в них), шаг 2
-наполовину: moneymanager переведён в ветке `android-glue`.
+Шаги 1–4 сделаны: библиотека выпущена как `v0.1.0` (крейт по тегу, AAR
+`com.akergez.gpui:android-glue:0.1.0` в GitHub Packages), и на неё
+переведены все три приложения, каждое своим релизом:
 
-- `cargo test` и `clippy -D warnings` проходят на десктопе и под
-  `aarch64-linux-android` (с `platform-verifier` и без), `ime-tests.sh`
-  проходит, `gradle assembleRelease` собирает AAR, задача
-  `publishReleasePublicationToGitHubPackagesRepository` есть, а
-  `publishToMavenLocal` даёт `.aar`, `.pom` и `.module`. Всё это запускалось
-  в `build-aux/build.Containerfile`.
-- Библиотека на AGP 9.1.0 и Gradle 9.4.1, как приложения: при `includeBuild`
-  две версии AGP в одной сборке смешивать нельзя (с 8.13.2 из tresse-kmp
-  moneymanager не собирался).
-- moneymanager (ветка `android-glue`): clippy и тесты на десктопе проходят,
-  `libmoney_manager.so` собирается под Android и экспортирует
-  `android_main`, `ANativeActivity_onCreate`, `…GpuiInputActivity_nativeIme`
-  и `…GpuiBack_nativeBack`, APK собирается, в объединённом манифесте есть
-  `GpuiPathPicker` и остальные вспомогательные активности из библиотеки.
-  Пока ветка берёт библиотеку из соседнего checkout (path-зависимость и
-  `includeBuild`), поэтому до публикации её CI не соберёт.
-- Ни разу не запускалось на телефоне. Не проверены: «назад» (ни клавиша, ни
-  жест predictive back), экспорт CSV через `saveDocument`, IME из matterfast
-  в moneymanager.
-- Не сделано: aiddiction (в нём незакоммиченная работа в тех же файлах),
-  matterfast (шаг 4), репозиторий на GitHub, тег `v0.1.0`, предложения в
-  upstream gpui-mobile (шаг 5).
+- money-manager-ng `v2.2.0`: подсказки клавиатуры в полях, `on_tap`,
+  «назад» на шагах первого запуска, экспорт CSV через `documents::save`;
+- matterfast `v2.3.0`: `keyboard.rs`, IME-мост и его тесты ушли в
+  библиотеку. Escape обрабатывается по-старому, а слой «назад» существует,
+  пока `close_front` есть что закрыть;
+- aiddiction `v1.2.0`: работа по `on_tap` встроена через библиотеку, «назад»
+  повторяет кнопку со стрелкой на телефоне, подсказки клавиатуры. Заодно
+  исправлено: верификатор сертификатов сокетов не получал activity и не имел
+  Java-части (теперь фича `platform-verifier` и Maven-репозиторий rustls, а
+  версия берётся из `Cargo.lock`).
+
+CI каждого приложения скачивает AAR из GitHub Packages своим `GITHUB_TOKEN`
+(`packages: read`), и настраивать доступ к пакету не понадобилось.
+
+Чего нет:
+
+- ничего не проверено на телефоне: «назад» (клавиша и жест predictive back
+  с `targetSdk 36`), подсказки клавиатуры, экспорт CSV;
+- нет `Purpose` для чисел (суммы в money-manager-ng получают обычную
+  клавиатуру);
+- шаг 5 (предложения в upstream gpui-mobile) не начат.

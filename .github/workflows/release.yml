@@ -15,7 +15,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  GRADLE_VERSION: "9.2.1"
+  GRADLE_VERSION: "9.4.1"
 
 defaults:
   run:

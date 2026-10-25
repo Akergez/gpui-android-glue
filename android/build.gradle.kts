@@ -7,8 +7,11 @@
 // Rust half (Cargo.toml) carries the same, and build-aux/check-version.sh
 // holds the two together.
 
+// The Android Gradle plugin of the applications (matterfast, money-manager-ng,
+// aiddiction): a build that includes this one (`includeBuild`) may not mix
+// two versions of it.
 plugins {
-    id("com.android.library") version "8.13.2"
+    id("com.android.library") version "9.1.0"
     `maven-publish`
 }
 

@@ -14,7 +14,7 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  GRADLE_VERSION: "9.2.1"
+  GRADLE_VERSION: "9.4.1"
   CARGO_NDK_VERSION: "4.1.2"
 
 permissions:

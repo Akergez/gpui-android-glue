@@ -31,11 +31,11 @@ RUN mkdir -p "$ANDROID_HOME/cmdline-tools" \
  && "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
       "platforms;android-36" "build-tools;36.0.0" "ndk;27.0.12077973" > /dev/null
 
-ENV GRADLE_VERSION=9.2.1
+ENV GRADLE_VERSION=9.4.1
 RUN curl -fsSL -o /tmp/gradle.zip "https://services.gradle.org/distributions/gradle-$GRADLE_VERSION-bin.zip" \
  && unzip -q /tmp/gradle.zip -d /opt \
  && rm /tmp/gradle.zip
-ENV PATH=/opt/gradle-9.2.1/bin:$PATH
+ENV PATH=/opt/gradle-9.4.1/bin:$PATH
 
 # The toolchain rust-toolchain.toml names, so that a run does not fetch it.
 RUN rustup toolchain install 1.95 --profile minimal --component clippy --target aarch64-linux-android

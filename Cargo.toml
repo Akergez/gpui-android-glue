@@ -1,0 +1,34 @@
+[package]
+name = "gpui-android-glue"
+version = "0.1.0"
+description = "What a gpui-kit application needs on Android beyond gpui-mobile: the keyboard, back, insets, appearance, links, documents"
+edition = "2024"
+rust-version = "1.95"
+license = "GPL-3.0-only"
+repository = "https://github.com/Akergez/gpui-android-glue"
+# A release is a git tag: gpui-pre-mobile is only in git, and crates.io takes
+# no git dependencies.
+publish = false
+
+[features]
+default = []
+# Hand the activity to rustls-platform-verifier at start, so that rustls can
+# ask Android about certificates. Without it the first TLS connection panics.
+platform-verifier = ["dep:rustls-platform-verifier"]
+
+[dependencies]
+gpui-kit = "0.7.0"
+tracing = "0.1"
+
+# gpui-mobile at the revision matterfast, money-manager-ng and aiddiction use.
+# An application must depend on this same revision, or two copies of the
+# platform end up in one library.
+[target.'cfg(target_os = "android")'.dependencies]
+gpui-mobile = { package = "gpui-pre-mobile", git = "https://github.com/longbridge/gpui-mobile", rev = "9075e3aa3eea812127f2c60ed66f0cd5798ff245" }
+android-activity = { version = "0.6", features = ["native-activity"] }
+android_logger = "0.15"
+async-channel = "2"
+log = "0.4"
+jni = "0.22.4"
+rustls-platform-verifier = { version = "0.7", optional = true }
+tracing = { version = "0.1", features = ["log"] }

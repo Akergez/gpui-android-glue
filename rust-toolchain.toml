@@ -1,0 +1,7 @@
+# The compiler every build uses, here and on CI (the workflows take it from
+# here). rustup fetches it, with clippy and the Android target, on the first
+# `cargo` run.
+[toolchain]
+channel = "1.95"
+components = ["clippy"]
+targets = ["aarch64-linux-android"]

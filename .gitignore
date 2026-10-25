@@ -1,0 +1,9 @@
+/target
+# Gradle's state and output.
+/android/.gradle
+/android/build
+/android/local.properties
+# What the SDK tools write to a home directory that is the checkout (in the
+# build container), and local tool settings.
+.android/
+/.claude/settings.local.json

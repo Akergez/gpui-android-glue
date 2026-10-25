@@ -18,6 +18,11 @@
 //!   layers the system's own animation runs and leaves the application.
 //! - On a desktop the same layers take Escape.
 //!
+//! With the on-screen keyboard up, back puts it away and does nothing else,
+//! as everywhere on Android: the keyboard takes the key itself, and Escape
+//! that reaches the application anyway while it is up (a gesture the
+//! application was given) only puts it away.
+//!
 //! A layer pushed with [`push_over_widgets`] comes before the toolkit's: a
 //! picture over the window outranks the input under it, which would
 //! otherwise take Escape for its own. An open dialog still comes first.
@@ -128,7 +133,13 @@ pub fn go_back(window: &mut Window, cx: &mut App) {
 
 pub(crate) fn init(cx: &mut App) {
     cx.intercept_keystrokes(|event, window, cx| {
-        if is_back(event) && !dialog_open(window, cx) && take_back(Rank::OverWidgets, window, cx) {
+        if !is_back(event) {
+            return;
+        }
+        if crate::keyboard::is_up(window) {
+            put_the_keyboard_away();
+            cx.stop_propagation();
+        } else if !dialog_open(window, cx) && take_back(Rank::OverWidgets, window, cx) {
             cx.stop_propagation();
         }
     })
@@ -157,6 +168,13 @@ pub(crate) fn init(cx: &mut App) {
         })
         .detach();
     }
+}
+
+/// Back with the keyboard up. The input keeps its focus; a tap raises the
+/// keyboard again (`keyboard::on_tap`).
+fn put_the_keyboard_away() {
+    #[cfg(target_os = "android")]
+    gpui_mobile::hide_keyboard();
 }
 
 fn escape() -> gpui_kit::Keystroke {

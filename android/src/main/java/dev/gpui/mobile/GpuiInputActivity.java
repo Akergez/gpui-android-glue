@@ -236,12 +236,12 @@ public class GpuiInputActivity extends NativeActivity {
             reportState();
         }
 
-        @Override public boolean onKeyPreIme(int code, KeyEvent event) {
-            if (code == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-                nativeIme(session, 4, "", 0, 0);
-            }
-            return super.onKeyPreIme(code, event);
-        }
+        // Back is not this box's to say anything about. With the keyboard up,
+        // the keyboard takes it and goes down, and that is all back should do;
+        // with the keyboard down, the key goes on to NativeActivity, which
+        // hands it to the application as Escape. Sending Escape from here as
+        // well went back a step with the keyboard up, and two steps with the
+        // box still focused after the keyboard was put away by its own button.
 
         @Override public InputConnection onCreateInputConnection(EditorInfo info) {
             info.inputType = type;

@@ -3,7 +3,7 @@
 //! ```ignore
 //! #[cfg(target_os = "android")]
 //! #[unsafe(no_mangle)]
-//! fn android_main(app: android_activity::AndroidApp) {
+//! fn android_main(app: gpui_android_glue::launch::AndroidApp) {
 //!     gpui_android_glue::launch::run(
 //!         app,
 //!         Config::new("aiddiction").filter("warn,aiddiction=info"),
@@ -15,7 +15,7 @@
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use android_activity::AndroidApp;
+pub use android_activity::AndroidApp;
 use gpui_kit::{App, AssetSource};
 use gpui_mobile::android::jni;
 

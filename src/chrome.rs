@@ -10,7 +10,8 @@ pub struct Frame {
     pub background: Option<Hsla>,
     pub border: Option<Hsla>,
     pub foreground: Option<Hsla>,
-    /// On a phone, how tall the strip is (48 px if left out).
+    /// On a phone, how tall the strip is (3 rem if left out, so that it
+    /// follows the interface's size).
     pub height: Option<Pixels>,
     /// On a phone, whether the strip leaves room for the status bar above it
     /// itself. Leave it off where something else already does.
@@ -32,10 +33,12 @@ pub fn title_frame(content: impl IntoElement, frame: Frame, cx: &App) -> AnyElem
         } else {
             px(0.)
         };
-        h_flex()
-            .flex_none()
-            .mt(top)
-            .h(frame.height.unwrap_or(px(48.)))
+        let strip = h_flex().flex_none().mt(top);
+        let strip = match frame.height {
+            Some(height) => strip.h(height),
+            None => strip.h_12(),
+        };
+        strip
             .px_3()
             .border_b_1()
             .bg(background)

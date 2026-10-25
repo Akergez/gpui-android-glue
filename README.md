@@ -34,7 +34,7 @@ start, for an application that connects over TLS with rustls.
 ```rust
 #[cfg(target_os = "android")]
 #[unsafe(no_mangle)]
-fn android_main(app: android_activity::AndroidApp) {
+fn android_main(app: gpui_android_glue::launch::AndroidApp) {
     use gpui_android_glue::launch::{Config, run};
     run(app, Config::new("my-app").filter("warn,my_app=info"), gpui_kit::assets::Assets, start);
 }

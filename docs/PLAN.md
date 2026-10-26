@@ -263,7 +263,7 @@ matterfast, moneymanager и aiddiction.
    Android 16 с `targetSdk 36`.
 4. Перевести matterfast (`close_front` → слои, `keyboard.rs` → библиотека).
 5. Предложить в upstream gpui-mobile: IME, `gpuiKeyboardHint`, отказ от
-   Back→`escape`.
+   Back→`escape`, настоящий буфер обмена вместо заглушки.
 
 ## 6. Состояние
 
@@ -285,10 +285,32 @@ matterfast, moneymanager и aiddiction.
 CI каждого приложения скачивает AAR из GitHub Packages своим `GITHUB_TOKEN`
 (`packages: read`), и настраивать доступ к пакету не понадобилось.
 
+Копирование и вставка (`edit_menu`, `clipboard`, `GpuiEditMenu.java`):
+
+- буфер обмена gpui-mobile на Android — заглушка внутри процесса
+  (`AndroidClipboard` в `src/android/platform.rs`): скопированное в
+  приложении не попадало в систему, а чужое нельзя было вставить. Библиотека
+  синхронизирует его с системным: перед вставкой (меню, Ctrl+V) берёт
+  системный, после копирования (меню, Ctrl+C/X) и при потере окном фокуса
+  отдаёт свой, если он изменился. Системный буфер читается только для
+  вставки: Android показывает уведомление о каждом чтении;
+- меню у выделения рисует сам gpui-kit, и подменить его через API нельзя.
+  `init` следит за каждым `InputState`/`TextareaState`/`EditorState`
+  (`observe_new`) и за выделением текста окна: как только gpui-kit открывает
+  своё меню, оно закрывается до отрисовки, а вместо него открывается
+  системная плавающая панель (`ActionMode.TYPE_FLOATING` на content view) с
+  `android.R.id.cut/copy/paste/selectAll` и их системными подписями.
+  Команды выполняются действиями самого поля (`Cut`, `Copy`, `Paste`,
+  `select_all_from_edit_menu`). Ручки выделения остаются от gpui-kit;
+- правильнее было бы починить буфер в gpui-mobile (шаг 5).
+
 Чего нет:
 
 - ничего не проверено на телефоне: «назад» (клавиша и жест predictive back
-  с `targetSdk 36`), подсказки клавиатуры, экспорт CSV;
+  с `targetSdk 36`), подсказки клавиатуры, экспорт CSV, системное меню
+  выделения и буфер обмена;
+- в системном меню нет пунктов `ACTION_PROCESS_TEXT` (перевод и т. п.) и
+  «Поделиться»;
 - нет `Purpose` для чисел (суммы в money-manager-ng получают обычную
   клавиатуру);
 - шаг 5 (предложения в upstream gpui-mobile) не начат.

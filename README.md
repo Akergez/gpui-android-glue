@@ -6,7 +6,7 @@ instead of a copy in every application (matterfast, money-manager-ng,
 aiddiction). Two halves, released together under one version:
 
 - **the crate** `gpui-android-glue` (`src/`): `android_main`, the keyboard,
-  back, insets, appearance, links, documents. Every function exists on every
+  back, copy and paste, insets, appearance, links, documents. Every function exists on every
   platform and does the desktop's thing, or nothing, off Android;
 - **the Android library** `com.akergez.gpui:android-glue` (`android/`): the
   Java classes gpui-mobile calls by name (from its example, with
@@ -14,7 +14,7 @@ aiddiction). Two halves, released together under one version:
   activities in a manifest merged into the application's.
 
 The halves call each other by name (`gpuiKeyboardHint`, `GpuiBack`,
-`GpuiPathPicker.saveDocument`), so an application takes both at the same
+`GpuiEditMenu`, `GpuiPathPicker.saveDocument`), so an application takes both at the same
 version. `docs/PLAN.md` (in Russian) is why it is the way it is.
 
 ## In an application
@@ -23,7 +23,7 @@ version. `docs/PLAN.md` (in Russian) is why it is the way it is.
 
 ```toml
 [dependencies]
-gpui-android-glue = { git = "https://github.com/Akergez/gpui-android-glue", tag = "v0.1.1" }
+gpui-android-glue = { git = "https://github.com/Akergez/gpui-android-glue", tag = "v0.1.2" }
 ```
 
 `platform-verifier` hands the activity to `rustls-platform-verifier` at
@@ -68,7 +68,7 @@ if (providers.gradleProperty("glueLocal").isPresent) {
 }
 ```
 
-`android/app/build.gradle.kts`: `implementation("com.akergez.gpui:android-glue:0.1.1")`,
+`android/app/build.gradle.kts`: `implementation("com.akergez.gpui:android-glue:0.1.2")`,
 in place of the androidx libraries the copied classes needed, and with the
 copies of `dev/gpui/mobile/*.java` deleted from the application.
 
@@ -93,6 +93,18 @@ Back goes to the topmost layer after the toolkit's own uses of Escape
 under the home screen. For predictive back (targetSdk 36, or
 `android:enableOnBackInvokedCallback="true"`) nothing more is needed: see
 `src/back.rs`.
+
+### Copy and paste
+
+Nothing to do: `init` makes it so. A long press in an input or in text
+brings up the system's floating toolbar — Cut, Copy, Paste, Select all, in
+the phone's language — in place of the toolkit's own menu, and its commands
+are the input's own. The toolkit's clipboard, which gpui-mobile keeps inside
+the process, is kept in step with the phone's: brought in before a paste,
+handed out after a copy and whenever the window loses its focus. An
+application that copies or pastes some other way and wants it seen at once
+calls `gpui_android_glue::clipboard::{push, pull}` around it. See
+`src/edit_menu.rs` and `src/clipboard.rs`.
 
 ## Checking it
 

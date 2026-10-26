@@ -8,6 +8,9 @@
 //! - [`keyboard`]: what a box is for, raising the keyboard on a tap, how tall
 //!   it is;
 //! - [`back`]: the system's back, as a stack of things to take back;
+//! - [`edit_menu`]: the system's Cut, Copy, Paste and Select all over a
+//!   selection made by touch, in place of the toolkit's menu;
+//! - [`clipboard`]: the phone's clipboard, in step with the toolkit's;
 //! - [`insets`]: what the system's bars cover;
 //! - [`appearance`]: light or dark as the phone says, and the status bar's
 //!   icons to go with it;
@@ -20,7 +23,9 @@
 pub mod appearance;
 pub mod back;
 pub mod chrome;
+pub mod clipboard;
 pub mod documents;
+pub mod edit_menu;
 pub mod insets;
 pub mod keyboard;
 #[cfg(target_os = "android")]
@@ -32,8 +37,10 @@ mod android;
 
 pub use open_url::open_url;
 
-/// Installs what has to listen for the whole run ([`back`]). Call once, after
-/// `gpui_kit::init`.
+/// Installs what has to listen for the whole run ([`back`], and on Android
+/// [`edit_menu`] and [`clipboard`]). Call once, after `gpui_kit::init`.
 pub fn init(cx: &mut gpui_kit::App) {
     back::init(cx);
+    clipboard::init(cx);
+    edit_menu::init(cx);
 }

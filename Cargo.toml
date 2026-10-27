@@ -1,6 +1,6 @@
 [package]
 name = "gpui-android-glue"
-version = "0.1.2"
+version = "0.2.0"
 description = "What a gpui-kit application needs on Android beyond gpui-mobile: the keyboard, back, copy and paste, insets, appearance, links, documents"
 edition = "2024"
 rust-version = "1.95"

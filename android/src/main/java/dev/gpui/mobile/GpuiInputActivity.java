@@ -72,8 +72,9 @@ public class GpuiInputActivity extends NativeActivity {
     /**
      * What the box with the keyboard is for, as the application says it:
      * 0 nothing in particular, 1 a message, 2 an address, 3 a name to sign in
-     * with, 4 a password. The platform layer asks for the same plain keyboard
-     * whatever has the focus, and only the application knows better.
+     * with, 4 a password, 5 a number that may have a fractional part. The
+     * platform layer asks for the same plain keyboard whatever has the focus,
+     * and only the application knows better.
      *
      * It may be said before the keyboard is asked for or after, so it is
      * kept, and applied at once if the keyboard is already up.
@@ -107,6 +108,7 @@ public class GpuiInputActivity extends NativeActivity {
             case 2: return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI;
             case 3: return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
             case 4: return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD;
+            case 5: return InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL;
         }
         return InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE;
     }

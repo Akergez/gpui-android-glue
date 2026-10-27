@@ -23,7 +23,7 @@ version. `docs/PLAN.md` (in Russian) is why it is the way it is.
 
 ```toml
 [dependencies]
-gpui-android-glue = { git = "https://github.com/Akergez/gpui-android-glue", tag = "v0.1.2" }
+gpui-android-glue = { git = "https://github.com/Akergez/gpui-android-glue", tag = "v0.2.0" }
 ```
 
 `platform-verifier` hands the activity to `rustls-platform-verifier` at
@@ -68,7 +68,7 @@ if (providers.gradleProperty("glueLocal").isPresent) {
 }
 ```
 
-`android/app/build.gradle.kts`: `implementation("com.akergez.gpui:android-glue:0.1.2")`,
+`android/app/build.gradle.kts`: `implementation("com.akergez.gpui:android-glue:0.2.0")`,
 in place of the androidx libraries the copied classes needed, and with the
 copies of `dev/gpui/mobile/*.java` deleted from the application.
 

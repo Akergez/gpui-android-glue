@@ -31,6 +31,9 @@ pub enum Purpose {
     /// The name or the e-mail address somebody signs in with.
     Login = 3,
     Password = 4,
+    /// A number that may have a fractional part: an amount, a quantity. The
+    /// keyboard of digits, with the decimal separator.
+    Number = 5,
 }
 
 thread_local! {
@@ -173,11 +176,17 @@ mod tests {
 
     #[test]
     fn losing_the_focus_to_a_box_that_already_spoke_changes_nothing() {
-        assert_eq!(told(Some(id(2)), id(1), &InputEvent::Blur, Purpose::Message), None);
+        assert_eq!(
+            told(Some(id(2)), id(1), &InputEvent::Blur, Purpose::Message),
+            None
+        );
     }
 
     #[test]
     fn typing_says_nothing() {
-        assert_eq!(told(Some(id(1)), id(1), &InputEvent::Change, Purpose::Message), None);
+        assert_eq!(
+            told(Some(id(1)), id(1), &InputEvent::Change, Purpose::Message),
+            None
+        );
     }
 }

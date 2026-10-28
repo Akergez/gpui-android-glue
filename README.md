@@ -23,7 +23,7 @@ version. `docs/PLAN.md` (in Russian) is why it is the way it is.
 
 ```toml
 [dependencies]
-gpui-android-glue = { git = "https://github.com/Akergez/gpui-android-glue", tag = "v0.3.0" }
+gpui-android-glue = { git = "https://github.com/Akergez/gpui-android-glue", tag = "v0.4.0" }
 ```
 
 `platform-verifier` hands the activity to `rustls-platform-verifier` at
@@ -68,7 +68,7 @@ if (providers.gradleProperty("glueLocal").isPresent) {
 }
 ```
 
-`android/app/build.gradle.kts`: `implementation("com.akergez.gpui:android-glue:0.3.0")`,
+`android/app/build.gradle.kts`: `implementation("com.akergez.gpui:android-glue:0.4.0")`,
 in place of the androidx libraries the copied classes needed, and with the
 copies of `dev/gpui/mobile/*.java` deleted from the application.
 
@@ -90,9 +90,34 @@ self.back = Some(gpui_android_glue::back::push(move |window, cx| {
 
 Back goes to the topmost layer after the toolkit's own uses of Escape
 (dialogs, menus, inputs); with no layer to take it, the application goes
-under the home screen. For predictive back (targetSdk 36, or
-`android:enableOnBackInvokedCallback="true"`) nothing more is needed: see
-`src/back.rs`.
+under the home screen. The library's manifest turns predictive back on
+(`android:enableOnBackInvokedCallback`), so with no layer the system's own
+animation takes the application home. See `src/back.rs`.
+
+With predictive back the gesture over a toolkit dialog reaches the
+application only if something is a layer: open dialogs with
+`gpui_android_glue::back::open_dialog(window, cx, build)` in place of
+`window.open_dialog`, and each is a layer for as long as it is open.
+
+From Android 14 the gesture shows where it goes before it is done: the page
+moves aside with the finger over the page back goes to, and goes back where
+it was if the finger turns round. The guard says how far a gesture that
+would go to its layer has gone; lay the page out by it with `preview`:
+
+```rust
+use gpui_android_glue::back;
+
+let gesture = self.back.as_ref().and_then(|back| back.gesture(window, cx));
+// Build what back goes to only while there is a gesture.
+let under = gesture.map(|_| self.render_page(previous, window, cx));
+back::preview(page, gesture)   // the whole page, opaque, filling the window
+    .under(under)
+    .swipe_back(true)          // and a finger drawn to the right, anywhere
+```
+
+`swipe_back` adds back by a finger drawn to the right across the page, with
+the same preview, the page under the finger pixel for pixel; the system's gesture works as before. A page that scrolls
+sideways would lose that direction to it: keep it to pages without.
 
 ### Copy and paste
 

@@ -7,7 +7,8 @@
 //! - [`launch`]: `android_main`, the whole of it;
 //! - [`keyboard`]: what a box is for, raising the keyboard on a tap, how tall
 //!   it is;
-//! - [`back`]: the system's back, as a stack of things to take back;
+//! - [`back`]: the system's back, as a stack of things to take back, with
+//!   the preview of predictive back and a swipe to the right;
 //! - [`edit_menu`]: the system's Cut, Copy, Paste and Select all over a
 //!   selection made by touch, in place of the toolkit's menu;
 //! - [`clipboard`]: the phone's clipboard, in step with the toolkit's;

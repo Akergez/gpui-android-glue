@@ -6,7 +6,11 @@
   intent filters) and the permissions it asks for.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application>
+    <!-- Predictive back (back.rs, GpuiBack.java): the gesture goes to the
+         application's callback while it has something to take back, with
+         its progress from Android 14, and is the system's animation home
+         when it has not. Merged into the application's <application>. -->
+    <application android:enableOnBackInvokedCallback="true">
         <!-- File prompts and saving a document (documents.rs): SAF grants
              access only to the document the person chooses. -->
         <activity

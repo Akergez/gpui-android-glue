@@ -2,6 +2,8 @@ package dev.gpui.glue;
 
 import android.app.Activity;
 import android.os.Build;
+import android.window.BackEvent;
+import android.window.OnBackAnimationCallback;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
@@ -12,15 +14,18 @@ import android.window.OnBackInvokedDispatcher;
  *
  * - As the key KEYCODE_BACK, which NativeActivity hands to the native side
  *   before anything in Java sees it, and gpui-mobile turns into the keystroke
- *   "escape". That is how back arrives without predictive back: the
- *   three-button bar, and the gesture of an application that has not opted
- *   in (`android:enableOnBackInvokedCallback`, or targetSdk 36 on Android 16).
- * - With predictive back, the gesture is no key at all: the system calls an
- *   OnBackInvokedCallback, or with none registered animates out to the home
- *   screen itself. So one is registered exactly while the application has
- *   something to take back (Rust says so through setEnabled), and it hands the
- *   gesture to Rust as nativeBack; with nothing to take back the system's own
- *   animation runs.
+ *   "escape". That is how back arrives without predictive back: before
+ *   Android 13.
+ * - With predictive back, which the library's manifest turns on
+ *   (`android:enableOnBackInvokedCallback`), the gesture is no key at all: the
+ *   system calls an OnBackInvokedCallback, or with none registered animates
+ *   out to the home screen itself. So one is registered exactly while the
+ *   application has something to take back (Rust says so through
+ *   setEnabled), and it hands the gesture to Rust as nativeBack; with nothing
+ *   to take back the system's own animation runs.
+ *
+ * From Android 14 the callback is an OnBackAnimationCallback, and the
+ * gesture's progress goes to Rust as it goes, for the page to move with it.
  */
 public final class GpuiBack {
     /** An OnBackInvokedCallback; kept as an Object so that older systems never load the class. */
@@ -37,7 +42,9 @@ public final class GpuiBack {
 
     private static void apply(Activity activity, boolean enabled) {
         if (Build.VERSION.SDK_INT < 33 || enabled == registered) return;
-        if (callback == null) callback = (OnBackInvokedCallback) GpuiBack::nativeBack;
+        if (callback == null) {
+            callback = Build.VERSION.SDK_INT >= 34 ? Animated.make() : (OnBackInvokedCallback) GpuiBack::nativeBack;
+        }
         OnBackInvokedDispatcher dispatcher = activity.getOnBackInvokedDispatcher();
         if (enabled) {
             dispatcher.registerOnBackInvokedCallback(
@@ -46,6 +53,33 @@ public final class GpuiBack {
             dispatcher.unregisterOnBackInvokedCallback((OnBackInvokedCallback) callback);
         }
         registered = enabled;
+    }
+
+    /** Android 14's callback, in a class of its own that older systems never load. */
+    private static final class Animated {
+        static OnBackInvokedCallback make() {
+            return new OnBackAnimationCallback() {
+                @Override
+                public void onBackStarted(BackEvent event) {
+                    nativeBackStarted(event.getSwipeEdge(), event.getProgress());
+                }
+
+                @Override
+                public void onBackProgressed(BackEvent event) {
+                    nativeBackProgressed(event.getProgress());
+                }
+
+                @Override
+                public void onBackCancelled() {
+                    nativeBackCancelled();
+                }
+
+                @Override
+                public void onBackInvoked() {
+                    nativeBack();
+                }
+            };
+        }
     }
 
     /**
@@ -63,4 +97,10 @@ public final class GpuiBack {
     }
 
     private static native void nativeBack();
+
+    private static native void nativeBackStarted(int edge, float progress);
+
+    private static native void nativeBackProgressed(float progress);
+
+    private static native void nativeBackCancelled();
 }

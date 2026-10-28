@@ -46,6 +46,7 @@ public class GpuiInputActivity extends NativeActivity {
             throw new IllegalStateException(error);
         }
         super.onCreate(state);
+        dev.gpui.glue.GpuiInsets.install(this);
     }
 
     public void gpuiShowKeyboard(int keyboardType, long session) {

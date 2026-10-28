@@ -17,7 +17,7 @@ use std::cell::Cell;
 
 use gpui_kit::component::input::InputEvent;
 use gpui_kit::prelude::*;
-use gpui_kit::{App, Div, Entity, EntityId, Focusable, Pixels, Window, div, px};
+use gpui_kit::{App, Div, Entity, EntityId, Focusable, Pixels, Window, div};
 
 /// What a box is for. The numbers are the ones `gpuiKeyboardHint` reads.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -117,34 +117,39 @@ pub fn on_tap<S: Focusable>(input: impl IntoElement, state: &Entity<S>, cx: &App
     element
 }
 
-/// How tall the on-screen keyboard is over `window`, or nothing while it is
-/// down.
-///
-/// The platform reports one inset for whatever covers the bottom, the
-/// navigation bar or the keyboard; one too tall to be the bar is the keyboard.
-/// (`gpui_mobile::keyboard_height` is kept only on iOS.)
-pub fn keyboard_inset(window: &Window) -> Pixels {
-    let (_, bottom) = crate::insets::system_bars();
+/// How tall the on-screen keyboard is over `window` right now, the
+/// navigation bar under it included, or nothing while it is down. While it
+/// slides in or out this is how far it has come, frame by frame: what is laid
+/// out by it in `render` moves with it, with nothing to animate.
+pub fn keyboard_inset(_window: &Window) -> Pixels {
+    #[cfg(target_os = "android")]
+    {
+        crate::insets::keyboard()
+    }
     #[cfg(not(target_os = "android"))]
-    let bottom = bottom.max(pretended());
-    if bottom > window.viewport_size().height * 0.2 {
-        bottom
-    } else {
-        px(0.)
+    {
+        pretended()
     }
 }
 
-/// Whether the keyboard is up over `window`.
+/// Whether the keyboard is up over `window`, or on its way up: true from the
+/// start of its animation in, false from the start of its animation out.
 pub fn is_up(window: &Window) -> bool {
-    keyboard_inset(window) > px(0.)
+    #[cfg(target_os = "android")]
+    {
+        let _ = window;
+        crate::insets::keyboard_visible()
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        keyboard_inset(window) > Pixels::ZERO
+    }
 }
 
 #[cfg(not(target_os = "android"))]
 fn pretended() -> Pixels {
-    px(std::env::var("GPUI_KEYBOARD")
-        .ok()
-        .and_then(|height| height.parse().ok())
-        .unwrap_or(0.))
+    let height = std::env::var("GPUI_KEYBOARD").ok().and_then(|height| height.parse::<f32>().ok());
+    Pixels::from(height.unwrap_or(0.))
 }
 
 #[cfg(test)]

@@ -23,7 +23,7 @@ version. `docs/PLAN.md` (in Russian) is why it is the way it is.
 
 ```toml
 [dependencies]
-gpui-android-glue = { git = "https://github.com/Akergez/gpui-android-glue", tag = "v0.2.0" }
+gpui-android-glue = { git = "https://github.com/Akergez/gpui-android-glue", tag = "v0.3.0" }
 ```
 
 `platform-verifier` hands the activity to `rustls-platform-verifier` at
@@ -68,7 +68,7 @@ if (providers.gradleProperty("glueLocal").isPresent) {
 }
 ```
 
-`android/app/build.gradle.kts`: `implementation("com.akergez.gpui:android-glue:0.2.0")`,
+`android/app/build.gradle.kts`: `implementation("com.akergez.gpui:android-glue:0.3.0")`,
 in place of the androidx libraries the copied classes needed, and with the
 copies of `dev/gpui/mobile/*.java` deleted from the application.
 
@@ -105,6 +105,27 @@ handed out after a copy and whenever the window loses its focus. An
 application that copies or pastes some other way and wants it seen at once
 calls `gpui_android_glue::clipboard::{push, pull}` around it. See
 `src/edit_menu.rs` and `src/clipboard.rs`.
+
+### The keyboard and the bars
+
+The window lies under the status bar, the navigation bar and the keyboard
+edge to edge, and is told how much of it each one covers, frame by frame
+while the keyboard slides in or out (`GpuiInsets.java`). Read them in
+`render` and lay out by them; the window is drawn again on every change, so
+what makes room for the keyboard moves with it, with nothing to animate:
+
+```rust
+use gpui_android_glue::{insets, keyboard};
+
+let (top, bars) = insets::system_bars();       // the bars only, never the keyboard
+let under = keyboard::keyboard_inset(window);  // the keyboard as drawn now, 0 when down
+div().pt(top).pb(bars.max(under))              // room for whichever covers more
+```
+
+`keyboard::is_up` says where the keyboard is going, not where it is. The
+activity keeps `android:windowSoftInputMode="adjustResize"`, which the
+animation needs on Android 10 and older. On a desktop `GPUI_KEYBOARD=<height>`
+pretends a keyboard is up.
 
 ## Checking it
 

@@ -383,6 +383,17 @@ public class GpuiInputActivity extends NativeActivity {
                         if (event.getAction() == KeyEvent.ACTION_DOWN) commitText("\n", 1);
                         return true;
                     }
+                    // A keyboard of digits sends its digits as keys, not as
+                    // text: a key the platform layer gets is only a keystroke,
+                    // and nothing would be typed. What a key types is
+                    // committed as text, the way the other keys' text is.
+                    int unicode = event.getUnicodeChar(event.getMetaState());
+                    if (unicode != 0 && (unicode & KeyCharacterMap.COMBINING_ACCENT) == 0) {
+                        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                            commitText(new String(Character.toChars(unicode)), 1);
+                        }
+                        return true;
+                    }
                     return super.sendKeyEvent(event);
                 }
                 @Override public boolean performEditorAction(int action) {

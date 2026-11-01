@@ -1,6 +1,6 @@
 [package]
 name = "gpui-android-glue"
-version = "0.4.1"
+version = "0.4.2"
 description = "What a gpui-kit application needs on Android beyond gpui-mobile: the keyboard, back, copy and paste, insets, appearance, links, documents"
 edition = "2024"
 rust-version = "1.95"
@@ -20,11 +20,12 @@ platform-verifier = ["dep:rustls-platform-verifier"]
 gpui-kit = "0.7.0"
 tracing = "0.1"
 
-# gpui-mobile at the revision matterfast, money-manager-ng and aiddiction use.
-# An application must depend on this same revision, or two copies of the
-# platform end up in one library.
+# gpui-mobile at the revision matterfast, money-manager-ng and aiddiction use:
+# Akergez's fork, longbridge's 9075e3a with touch moves resampled at the
+# frame's time (an even scroll under a finger). An application must depend on
+# this same revision, or two copies of the platform end up in one library.
 [target.'cfg(target_os = "android")'.dependencies]
-gpui-mobile = { package = "gpui-pre-mobile", git = "https://github.com/longbridge/gpui-mobile", rev = "9075e3aa3eea812127f2c60ed66f0cd5798ff245" }
+gpui-mobile = { package = "gpui-pre-mobile", git = "https://github.com/Akergez/gpui-mobile", rev = "dac8bcc1515434625f6b6b3945efc0452b3c1f3a" }
 android-activity = { version = "0.6", features = ["native-activity"] }
 android_logger = "0.15"
 async-channel = "2"

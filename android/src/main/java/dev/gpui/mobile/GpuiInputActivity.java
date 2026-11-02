@@ -47,6 +47,7 @@ public class GpuiInputActivity extends NativeActivity {
         }
         super.onCreate(state);
         dev.gpui.glue.GpuiInsets.install(this);
+        dev.gpui.glue.GpuiRefreshRate.install(this);
     }
 
     public void gpuiShowKeyboard(int keyboardType, long session) {

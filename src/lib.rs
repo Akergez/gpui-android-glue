@@ -18,6 +18,12 @@
 //!   icons to go with it;
 //! - [`open_url`], [`documents`], [`chrome`].
 //!
+//! On Android the crate also makes mimalloc the allocator: GPUI makes and
+//! drops thousands of small objects on every frame, and the system's own
+//! allocator (scudo) made a frame three to four times as long. An
+//! application that sets a `#[global_allocator]` of its own must not depend
+//! on this crate on Android.
+//!
 //! The Java half is the Android library in `android/` of this repository
 //! (`com.akergez.gpui:android-glue`). The two halves call each other by name,
 //! so they must be of the same version.
@@ -38,6 +44,10 @@ mod open_url;
 mod android;
 
 pub use open_url::open_url;
+
+#[cfg(target_os = "android")]
+#[global_allocator]
+static ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 /// Installs what has to listen for the whole run ([`back`], and on Android
 /// [`edit_menu`], [`clipboard`] and [`insets`]). Call once, after `gpui_kit::init`.

@@ -1,6 +1,6 @@
 [package]
 name = "gpui-android-glue"
-version = "0.4.3"
+version = "0.4.4"
 description = "What a gpui-kit application needs on Android beyond gpui-mobile: the keyboard, back, copy and paste, insets, appearance, links, documents"
 edition = "2024"
 rust-version = "1.95"
@@ -22,10 +22,11 @@ tracing = "0.1"
 
 # gpui-mobile at the revision matterfast, money-manager-ng and aiddiction use:
 # Akergez's fork, longbridge's 9075e3a with touch moves resampled at the
-# frame's time and frames paced on vsyncs (an even scroll under a finger). An application must depend on
+# frame's time, frames paced on vsyncs, and a fling of its own whose steps
+# fall on vsyncs too (an even scroll under a finger and after it). An application must depend on
 # this same revision, or two copies of the platform end up in one library.
 [target.'cfg(target_os = "android")'.dependencies]
-gpui-mobile = { package = "gpui-pre-mobile", git = "https://github.com/Akergez/gpui-mobile", rev = "d8b6c84ee21840cdd94412b7d05297a1936d1005" }
+gpui-mobile = { package = "gpui-pre-mobile", git = "https://github.com/Akergez/gpui-mobile", rev = "dda3bf3635142249a5384ba603929bf4a3db284f" }
 android-activity = { version = "0.6", features = ["native-activity"] }
 android_logger = "0.15"
 # The allocator on Android (lib.rs): the system's is too slow for GPUI.

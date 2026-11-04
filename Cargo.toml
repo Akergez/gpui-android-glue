@@ -1,6 +1,6 @@
 [package]
 name = "gpui-android-glue"
-version = "0.4.4"
+version = "0.4.5"
 description = "What a gpui-kit application needs on Android beyond gpui-mobile: the keyboard, back, copy and paste, insets, appearance, links, documents"
 edition = "2024"
 rust-version = "1.95"
@@ -25,6 +25,11 @@ tracing = "0.1"
 # frame's time, frames paced on vsyncs, and a fling of its own whose steps
 # fall on vsyncs too (an even scroll under a finger and after it). An application must depend on
 # this same revision, or two copies of the platform end up in one library.
+# The desktop's font, from the settings portal: the same version and
+# features as GPUI's own on Linux, so it is one copy.
+[target.'cfg(any(target_os = "linux", target_os = "freebsd"))'.dependencies]
+ashpd = { version = "0.13", default-features = false, features = ["async-io", "settings"] }
+
 [target.'cfg(target_os = "android")'.dependencies]
 gpui-mobile = { package = "gpui-pre-mobile", git = "https://github.com/Akergez/gpui-mobile", rev = "dda3bf3635142249a5384ba603929bf4a3db284f" }
 android-activity = { version = "0.6", features = ["native-activity"] }

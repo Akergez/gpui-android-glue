@@ -16,7 +16,9 @@
 //!   frame while the keyboard moves;
 //! - [`appearance`]: light or dark as the phone says, and the status bar's
 //!   icons to go with it;
-//! - [`open_url`], [`documents`], [`chrome`].
+//! - [`open_url`], [`documents`], [`chrome`];
+//! - the desktop's font for the interface on Linux, where GPUI draws with
+//!   the first of its own list that is installed (see `font.rs`).
 //!
 //! On Android the crate also makes mimalloc the allocator: GPUI makes and
 //! drops thousands of small objects on every frame, and the system's own
@@ -34,6 +36,7 @@ pub mod chrome;
 pub mod clipboard;
 pub mod documents;
 pub mod edit_menu;
+mod font;
 pub mod insets;
 pub mod keyboard;
 #[cfg(target_os = "android")]
@@ -50,10 +53,12 @@ pub use open_url::open_url;
 static ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 /// Installs what has to listen for the whole run ([`back`], and on Android
-/// [`edit_menu`], [`clipboard`] and [`insets`]). Call once, after `gpui_kit::init`.
+/// [`edit_menu`], [`clipboard`] and [`insets`]), and gives the theme the
+/// desktop's font on Linux. Call once, after `gpui_kit::init`.
 pub fn init(cx: &mut gpui_kit::App) {
     back::init(cx);
     clipboard::init(cx);
     edit_menu::init(cx);
     insets::init(cx);
+    font::init(cx);
 }

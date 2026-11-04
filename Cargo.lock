@@ -2338,10 +2338,11 @@ dependencies = [
 
 [[package]]
 name = "gpui-android-glue"
-version = "0.4.4"
+version = "0.4.5"
 dependencies = [
  "android-activity",
  "android_logger",
+ "ashpd",
  "async-channel",
  "gpui-kit",
  "gpui-pre",

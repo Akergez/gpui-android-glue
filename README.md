@@ -6,12 +6,15 @@ instead of a copy in every application (matterfast, money-manager-ng,
 aiddiction). Two halves, released together under one version:
 
 - **the crate** `gpui-android-glue` (`src/`): `android_main`, the keyboard,
-  back, copy and paste, insets, appearance, links, documents. Every function exists on every
+  back, copy and paste, insets, appearance, links, documents, the
+  desktop's font on Linux. Every function exists on every
   platform and does the desktop's thing, or nothing, off Android;
 - **the Android library** `com.akergez.gpui:android-glue` (`android/`): the
   Java classes gpui-mobile calls by name (from its example, with
   matterfast's IME), what the crate calls, and gpui-mobile's helper
-  activities in a manifest merged into the application's.
+  activities in a manifest merged into the application's. `GpuiFonts`
+  tells gpui-mobile the system's font, font size and bold text, so the
+  interface draws its text as the phone does.
 
 The halves call each other by name (`gpuiKeyboardHint`, `GpuiBack`,
 `GpuiEditMenu`, `GpuiPathPicker.saveDocument`), so an application takes both at the same
@@ -23,7 +26,7 @@ version. `docs/PLAN.md` (in Russian) is why it is the way it is.
 
 ```toml
 [dependencies]
-gpui-android-glue = { git = "https://github.com/Akergez/gpui-android-glue", tag = "v0.4.5" }
+gpui-android-glue = { git = "https://github.com/Akergez/gpui-android-glue", tag = "v0.4.6" }
 ```
 
 `platform-verifier` hands the activity to `rustls-platform-verifier` at
@@ -68,7 +71,7 @@ if (providers.gradleProperty("glueLocal").isPresent) {
 }
 ```
 
-`android/app/build.gradle.kts`: `implementation("com.akergez.gpui:android-glue:0.4.5")`,
+`android/app/build.gradle.kts`: `implementation("com.akergez.gpui:android-glue:0.4.6")`,
 in place of the androidx libraries the copied classes needed, and with the
 copies of `dev/gpui/mobile/*.java` deleted from the application.
 

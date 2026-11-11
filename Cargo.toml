@@ -1,6 +1,6 @@
 [package]
 name = "gpui-android-glue"
-version = "0.4.5"
+version = "0.4.6"
 description = "What a gpui-kit application needs on Android beyond gpui-mobile: the keyboard, back, copy and paste, insets, appearance, links, documents"
 edition = "2024"
 rust-version = "1.95"
@@ -23,7 +23,9 @@ tracing = "0.1"
 # gpui-mobile at the revision matterfast, money-manager-ng and aiddiction use:
 # Akergez's fork, longbridge's 9075e3a with touch moves resampled at the
 # frame's time, frames paced on vsyncs, and a fling of its own whose steps
-# fall on vsyncs too (an even scroll under a finger and after it). An application must depend on
+# fall on vsyncs too (an even scroll under a finger and after it), and the
+# system's font, font size and bold text (a text system that draws variable
+# fonts at every weight; `GpuiFonts` in the Java half answers it). An application must depend on
 # this same revision, or two copies of the platform end up in one library.
 # The desktop's font, from the settings portal: the same version and
 # features as GPUI's own on Linux, so it is one copy.
@@ -31,7 +33,7 @@ tracing = "0.1"
 ashpd = { version = "0.13", default-features = false, features = ["async-io", "settings"] }
 
 [target.'cfg(target_os = "android")'.dependencies]
-gpui-mobile = { package = "gpui-pre-mobile", git = "https://github.com/Akergez/gpui-mobile", rev = "dda3bf3635142249a5384ba603929bf4a3db284f" }
+gpui-mobile = { package = "gpui-pre-mobile", git = "https://github.com/Akergez/gpui-mobile", rev = "d924245f173b80ebc8bcc4da5568fc97d3c64c43" }
 android-activity = { version = "0.6", features = ["native-activity"] }
 android_logger = "0.15"
 # The allocator on Android (lib.rs): the system's is too slow for GPUI.

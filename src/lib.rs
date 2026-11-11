@@ -18,7 +18,9 @@
 //!   icons to go with it;
 //! - [`open_url`], [`documents`], [`chrome`];
 //! - the desktop's font for the interface on Linux, where GPUI draws with
-//!   the first of its own list that is installed (see `font.rs`).
+//!   the first of its own list that is installed (see `font.rs`); on
+//!   Android the Java half tells gpui-mobile the system's font, font size
+//!   and "bold text" (`GpuiFonts`).
 //!
 //! On Android the crate also makes mimalloc the allocator: GPUI makes and
 //! drops thousands of small objects on every frame, and the system's own

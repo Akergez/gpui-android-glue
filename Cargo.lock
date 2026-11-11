@@ -2338,7 +2338,7 @@ dependencies = [
 
 [[package]]
 name = "gpui-android-glue"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "android-activity",
  "android_logger",
@@ -2728,7 +2728,7 @@ dependencies = [
 [[package]]
 name = "gpui-pre-mobile"
 version = "0.1.0"
-source = "git+https://github.com/Akergez/gpui-mobile?rev=dda3bf3635142249a5384ba603929bf4a3db284f#dda3bf3635142249a5384ba603929bf4a3db284f"
+source = "git+https://github.com/Akergez/gpui-mobile?rev=d924245f173b80ebc8bcc4da5568fc97d3c64c43#d924245f173b80ebc8bcc4da5568fc97d3c64c43"
 dependencies = [
  "android-activity",
  "android_logger",
@@ -2738,9 +2738,11 @@ dependencies = [
  "core-foundation-sys",
  "core-graphics 0.24.0",
  "core-text",
+ "cosmic-text",
  "futures",
  "gpui-pre",
  "gpui-pre-wgpu",
+ "itertools 0.14.0",
  "jni",
  "libc",
  "log",
@@ -2753,6 +2755,9 @@ dependencies = [
  "raw-window-handle",
  "rustc-hash 2.1.3",
  "smallvec",
+ "swash",
+ "unicode-bidi",
+ "unicode-segmentation",
  "uuid",
  "wgpu",
  "zed-font-kit",

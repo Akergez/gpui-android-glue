@@ -6,9 +6,14 @@
 //! whatever the desktop is set to. So on Linux the desktop is asked, through
 //! the settings portal (GNOME and KDE both answer it, and so it does in a
 //! Flatpak), and the theme is given the family it names when it is
-//! installed; so is its monospace font for code. Elsewhere `.SystemUIFont`
-//! is already the system's: San Francisco on macOS, Segoe UI on Windows,
-//! Roboto on Android.
+//! installed; so is its monospace font for code. On macOS and Windows
+//! `.SystemUIFont` is already the system's: San Francisco, Segoe UI.
+//!
+//! On Android it is gpui-mobile's text system that takes the system's font,
+//! asking this crate's Java half (`dev.gpui.mobile.GpuiFonts`) which files
+//! the device draws its own text with (Google Sans on a Pixel, the maker's or
+//! the person's font elsewhere), and with it the "bold text" setting; the
+//! font size setting is in the window's scale. Nothing is left to do here.
 //!
 //! A family the application gave the theme itself is left as it is.
 

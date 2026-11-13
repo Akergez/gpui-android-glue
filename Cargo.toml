@@ -1,6 +1,6 @@
 [package]
 name = "gpui-android-glue"
-version = "0.4.8"
+version = "0.4.9"
 description = "What a gpui-kit application needs on Android beyond gpui-mobile: the keyboard, back, copy and paste, insets, appearance, links, documents"
 edition = "2024"
 rust-version = "1.95"
@@ -33,7 +33,7 @@ tracing = "0.1"
 ashpd = { version = "0.13", default-features = false, features = ["async-io", "settings"] }
 
 [target.'cfg(target_os = "android")'.dependencies]
-gpui-mobile = { package = "gpui-pre-mobile", git = "https://github.com/Akergez/gpui-mobile", rev = "d924245f173b80ebc8bcc4da5568fc97d3c64c43" }
+gpui-mobile = { package = "gpui-pre-mobile", git = "https://github.com/Akergez/gpui-mobile", rev = "d69470c6f6de0cc005797f8db0553082066eb857" }
 android-activity = { version = "0.6", features = ["native-activity"] }
 android_logger = "0.15"
 # The allocator on Android (lib.rs): the system's is too slow for GPUI.

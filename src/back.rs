@@ -412,6 +412,17 @@ thread_local! {
     static NEXT_MOTION: std::cell::Cell<u64> = const { std::cell::Cell::new(0) };
     /// Set while a swipe's back is dispatched: it goes past the keyboard.
     static SWIPED: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    /// Set while back is dispatched at the end of a gesture that was shown.
+    static FINISHING_SHOWN: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Whether back currently being dispatched completes a gesture whose preview
+/// was shown. That page is now where the gesture left it, so whoever takes
+/// this back must not play its entrance again. Read this while handling back:
+/// checking whether a gesture is present in the current frame is not the same,
+/// because the gesture has already ended by the time back is dispatched.
+pub fn finishing_shown() -> bool {
+    FINISHING_SHOWN.get()
 }
 
 fn begin(source: Source, from: Edge, progress: f32, window: &mut Window) {
@@ -464,18 +475,19 @@ fn release(commit: bool, window: &mut Window, cx: &mut App) {
 /// The page has settled: the gesture is over, and back goes if it was meant
 /// to.
 fn settled(id: u64, commit: bool, source: Source, window: &mut Window, cx: &mut App) {
-    let ours = MOTION.with_borrow_mut(|motion| {
-        let ours = motion.as_ref().is_some_and(|motion| motion.id == id);
-        if ours {
-            *motion = None;
-        }
-        ours
+    let (ours, shown) = MOTION.with_borrow_mut(|motion| {
+        let Some(shown) = motion.as_ref().filter(|motion| motion.id == id).map(|motion| motion.shown) else {
+            return (false, false);
+        };
+        *motion = None;
+        (true, shown)
     });
     if !ours {
         return;
     }
     window.refresh();
     if commit {
+        FINISHING_SHOWN.set(shown);
         match source {
             Source::System => go_back(window, cx),
             Source::Swipe => {
@@ -484,6 +496,7 @@ fn settled(id: u64, commit: bool, source: Source, window: &mut Window, cx: &mut 
                 SWIPED.set(false);
             }
         }
+        FINISHING_SHOWN.set(false);
     }
 }
 
@@ -901,9 +914,11 @@ mod in_a_window {
         }
     }
 
-    fn screen(cx: &mut TestAppContext) -> (AnyWindowHandle, Rc<Cell<u32>>) {
+    fn screen(cx: &mut TestAppContext) -> (AnyWindowHandle, Rc<Cell<u32>>, Rc<Cell<bool>>) {
         let backs = Rc::new(Cell::new(0));
         let counted = backs.clone();
+        let revealed = Rc::new(Cell::new(false));
+        let recorded = revealed.clone();
         let window = cx.update(|cx| {
             gpui_kit::component::init(cx);
             super::init(cx);
@@ -917,6 +932,7 @@ mod in_a_window {
                         let counted = counted.clone();
                         let page = super::push(move |_, cx| {
                             counted.set(counted.get() + 1);
+                            recorded.set(super::finishing_shown());
                             screen.update(cx, |screen: &mut Screen, cx| {
                                 screen.page = None;
                                 cx.notify();
@@ -931,7 +947,7 @@ mod in_a_window {
             window
         });
         cx.update_window(window, |_, window, cx| window.render_frame(cx)).unwrap();
-        (window, backs)
+        (window, backs, revealed)
     }
 
     /// A finger from (100, 200) moved by (dx, dy) in steps a frame apart,
@@ -960,15 +976,35 @@ mod in_a_window {
 
     #[gpui::test]
     fn a_swipe_to_the_right_goes_back(cx: &mut TestAppContext) {
-        let (window, backs) = screen(cx);
+        let (window, backs, revealed) = screen(cx);
         swipe(cx, window, 300., 0.);
         assert_eq!(backs.get(), 1);
         assert!(!any());
+        assert!(revealed.get(), "the swipe was shown, so its back must say so");
+        assert!(!super::finishing_shown());
+    }
+
+    #[gpui::test]
+    fn a_system_gesture_completes_as_the_back_it_already_showed(cx: &mut TestAppContext) {
+        let (window, backs, revealed) = screen(cx);
+        cx.update_window(window, |_, window, cx| {
+            super::from_the_system(super::Signal::Started(super::Edge::Left, 0.), window, cx);
+            window.render_frame(cx);
+            super::from_the_system(super::Signal::Progressed(0.6), window, cx);
+            window.render_frame(cx);
+            super::from_the_system(super::Signal::Invoked, window, cx);
+        })
+        .unwrap();
+        cx.executor().advance_clock(Duration::from_secs(1));
+        cx.run_until_parked();
+        assert_eq!(backs.get(), 1);
+        assert!(revealed.get(), "the system's gesture was shown, its back must say so");
+        assert!(!super::finishing_shown());
     }
 
     #[gpui::test]
     fn the_page_follows_the_finger_one_to_one(cx: &mut TestAppContext) {
-        let (window, backs) = screen(cx);
+        let (window, backs, _) = screen(cx);
         let page_left = |cx: &mut TestAppContext| {
             cx.update_window(window, |_, window, cx| {
                 window.render_frame(cx);
@@ -1004,7 +1040,7 @@ mod in_a_window {
 
     #[gpui::test]
     fn a_swipe_up_scrolls_and_does_not_go_back(cx: &mut TestAppContext) {
-        let (window, backs) = screen(cx);
+        let (window, backs, _) = screen(cx);
         swipe(cx, window, 0., -300.);
         assert_eq!(backs.get(), 0);
         assert!(any());
@@ -1012,14 +1048,14 @@ mod in_a_window {
 
     #[gpui::test]
     fn a_swipe_to_the_left_does_not_go_back(cx: &mut TestAppContext) {
-        let (window, backs) = screen(cx);
+        let (window, backs, _) = screen(cx);
         swipe(cx, window, -300., 0.);
         assert_eq!(backs.get(), 0);
     }
 
     #[gpui::test]
     fn a_dialog_is_a_layer_while_it_is_open(cx: &mut TestAppContext) {
-        let (window, backs) = screen(cx);
+        let (window, backs, _) = screen(cx);
         cx.update_window(window, |_, window, cx| open_dialog(window, cx, |dialog, _, _| dialog.title("A dialog")))
             .unwrap();
         cx.update_window(window, |_, window, cx| window.render_frame(cx)).unwrap();

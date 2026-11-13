@@ -57,7 +57,25 @@ jobs:
           yes | sdkmanager --licenses || true
           sdkmanager "platforms;android-36" "build-tools;36.0.0"
       - name: Publish
+        id: publish
         working-directory: android
+        # An amended tag re-runs this job; the Java half has not changed if the
+        # AAR was already published under this version, and Maven refuses to
+        # overwrite it. The next step accepts that.
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gradle --no-daemon publishReleasePublicationToGitHubPackagesRepository
+      - name: Accept a version that is already published
+        if: steps.publish.outcome == 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          url="https://maven.pkg.github.com/${GITHUB_REPOSITORY,,}/com/akergez/gpui/android-glue/${version}/android-glue-${version}.pom"
+          code=$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $GITHUB_TOKEN" "$url")
+          if [ "$code" != 200 ]; then
+            echo "publishing ${version} failed, and it is not in the registry" >&2
+            exit 1
+          fi
+          echo "android-glue ${version} is already published; keeping it."

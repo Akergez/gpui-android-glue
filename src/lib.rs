@@ -38,6 +38,7 @@ pub mod chrome;
 pub mod clipboard;
 pub mod documents;
 pub mod edit_menu;
+pub use font::{DesktopText, text as desktop_text};
 mod font;
 pub mod insets;
 pub mod keyboard;

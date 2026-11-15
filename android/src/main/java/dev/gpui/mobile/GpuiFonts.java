@@ -51,23 +51,74 @@ public final class GpuiFonts {
             float dp = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, metrics);
             float scale = dp > 0f ? sp / dp : config.fontScale;
             out.append("scale\t").append(scale).append('\n');
+            Typeface system = systemTypeface(context);
+            out.append("base\t").append(baseWeight(context, system)).append('\n');
             if (Build.VERSION.SDK_INT >= 31) {
                 int adjustment = config.fontWeightAdjustment;
                 if (adjustment != Configuration.FONT_WEIGHT_ADJUSTMENT_UNDEFINED) {
                     out.append("weight\t").append(adjustment).append('\n');
                 }
-                faces(context, out);
+            }
+            if (Build.VERSION.SDK_INT >= 28) {
+                faces(context, out, system);
             }
         } catch (Throwable error) {
             Log.w(TAG, "the system's text could not be read", error);
         }
-        return out.toString();
+        String answer = out.toString();
+        Log.i(TAG, answer.replace('\n', ' '));
+        return answer;
+    }
+
+    /**
+     * The weight the device draws its own text at. A OnePlus or an Oppo can
+     * set it below or above the normal 400; the Typeface carries it, and the
+     * text appearance may name it too.
+     */
+    private static int baseWeight(Context context, Typeface system) {
+        int weight = 400;
+        if (Build.VERSION.SDK_INT >= 28) {
+            try {
+                int typeface = system.getWeight();
+                if (typeface > 0) {
+                    weight = typeface;
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        Resources resources = context.getResources();
+        int[] named = {
+            resources.getIdentifier("fontWeight", "attr", "android"),
+            resources.getIdentifier("textFontWeight", "attr", "android"),
+        };
+        if (named[0] == 0 && named[1] == 0) {
+            return weight;
+        }
+        TypedArray attributes = context.obtainStyledAttributes(
+                android.R.style.TextAppearance_DeviceDefault, named);
+        try {
+            int where = attributes.getInt(0, 0);
+            if (where <= 0) {
+                float weightValue = attributes.getFloat(1, 0f);
+                if (weightValue > 0f) {
+                    where = Math.round(weightValue);
+                }
+            }
+            // The appearance's word wins when the Typeface itself kept the
+            // AOSP normal; an explicit 400 from it does not override a
+            // heavier device Typeface.
+            if (where > 0 && (weight == 400 || where != 400)) {
+                weight = where;
+            }
+        } finally {
+            attributes.recycle();
+        }
+        return weight;
     }
 
     /** The files the device's text appearance draws from, regular first. */
-    @android.annotation.TargetApi(31)
-    private static void faces(Context context, StringBuilder out) {
-        Typeface base = systemTypeface(context);
+    @android.annotation.TargetApi(28)
+    private static void faces(Context context, StringBuilder out, Typeface base) {
 
         int[] weights = { 400, 100, 200, 300, 500, 600, 700, 800, 900 };
         LinkedHashSet<String> files = new LinkedHashSet<>();

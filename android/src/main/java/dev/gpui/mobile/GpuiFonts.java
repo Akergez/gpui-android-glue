@@ -10,6 +10,7 @@ import android.graphics.fonts.Font;
 import android.graphics.text.PositionedGlyphs;
 import android.graphics.text.TextRunShaper;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -76,6 +77,23 @@ public final class GpuiFonts {
      * text appearance may name it too.
      */
     private static int baseWeight(Context context, Typeface system) {
+        // OnePlus and Oppo keep the font weight slider in
+        // font_variation_settings: the low 12 bits are the seekbar's value
+        // (100..800), shifted by 150 from the wght the font is drawn at, and
+        // the 550 default is the normal 400. The high bits say whether the
+        // setting is in this format.
+        try {
+            int packed = Settings.System.getInt(
+                    context.getContentResolver(), "font_variation_settings", 550);
+            if (packed != 0) {
+                int values = packed & 0x0FFF;
+                int weight = Math.max(values - 150, 100);
+                if (weight >= 100 && weight <= 700) {
+                    return weight;
+                }
+            }
+        } catch (Throwable ignored) {
+        }
         int weight = 400;
         if (Build.VERSION.SDK_INT >= 28) {
             try {

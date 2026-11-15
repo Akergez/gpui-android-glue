@@ -67,18 +67,7 @@ public final class GpuiFonts {
     /** The files the device's text appearance draws from, regular first. */
     @android.annotation.TargetApi(31)
     private static void faces(Context context, StringBuilder out) {
-        Typeface base = Typeface.DEFAULT;
-        TypedArray attributes = context.obtainStyledAttributes(
-                android.R.style.TextAppearance_DeviceDefault,
-                new int[] { android.R.attr.fontFamily });
-        try {
-            String family = attributes.getString(0);
-            if (family != null && !family.isEmpty()) {
-                base = Typeface.create(family, Typeface.NORMAL);
-            }
-        } finally {
-            attributes.recycle();
-        }
+        Typeface base = systemTypeface(context);
 
         int[] weights = { 400, 100, 200, 300, 500, 600, 700, 800, 900 };
         LinkedHashSet<String> files = new LinkedHashSet<>();
@@ -102,5 +91,61 @@ public final class GpuiFonts {
         for (String file : files) {
             out.append("face\t").append(file).append('\n');
         }
+    }
+
+    /**
+     * The typeface the device draws its own interface with. The text
+     * appearance names the application default, which on AOSP is Roboto; a
+     * Pixel draws its settings and launcher in Google Sans, a Samsung in
+     * SamsungOne, a Xiaomi in MiSans. Where the default is still Roboto, the
+     * makers' names are tried in turn and the first one that is a different
+     * file is the system's.
+     */
+    private static Typeface systemTypeface(Context context) {
+        Typeface base = Typeface.DEFAULT;
+        TypedArray attributes = context.obtainStyledAttributes(
+                android.R.style.TextAppearance_DeviceDefault,
+                new int[] { android.R.attr.fontFamily });
+        try {
+            String family = attributes.getString(0);
+            if (family != null && !family.isEmpty()) {
+                base = Typeface.create(family, Typeface.NORMAL);
+            }
+        } finally {
+            attributes.recycle();
+        }
+
+        String baseFile = fileOf(base);
+        if (baseFile != null
+                && !baseFile.contains("Roboto")
+                && !baseFile.contains("DroidSans")) {
+            // The person has chosen a font, or the maker has made it the
+            // default; it is the system's already.
+            return base;
+        }
+        String[] families = { "google-sans-text", "google-sans", "samsungone",
+                "samsung-sans", "misans", "oppo-sans", "oneplus-sans", "harmonyos-sans" };
+        for (String family : families) {
+            Typeface candidate = Typeface.create(family, Typeface.NORMAL);
+            String file = fileOf(candidate);
+            if (file != null && !file.equals(baseFile)) {
+                return candidate;
+            }
+        }
+        return base;
+    }
+
+    /** The file one glyph of {@code typeface} is drawn from, or null. */
+    private static String fileOf(Typeface typeface) {
+        Paint paint = new Paint();
+        paint.setTypeface(typeface);
+        PositionedGlyphs glyphs =
+                TextRunShaper.shapeTextRun("a", 0, 1, 0, 1, 0f, 0f, false, paint);
+        if (glyphs.glyphCount() == 0) {
+            return null;
+        }
+        Font font = glyphs.getFont(0);
+        File file = font.getFile();
+        return file == null ? null : file.getAbsolutePath();
     }
 }
